@@ -31,6 +31,7 @@ female(third_maid).
 female(sauvali).
 female(draupadi).
 female(hidimba).
+female(subhadra).
 
 %child(X,Y) X has child Y
 child(sage_parashar,vyas).
@@ -75,6 +76,7 @@ child(hidimba,ghatotkach).
 child(ganga,bheeshma).
 child(shantanu,bheeshma).
 
+
 married(king_shantanu,ganga).
 married(king_shantanu,satyavati).
 married(ambika,vichitraveerya).
@@ -84,7 +86,6 @@ married(pandu,kunti).
 married(pandu,madri).
 married(gandhari,dhrutarashtra).
 married(arjun,subhadra).
-
 married(yudhistir,draupadi).
 married(bheem,draupadi).
 married(bheem,hidimba).
@@ -92,8 +93,24 @@ married(nakul,draupadi).
 married(sahdev,draupadi).
 married(arjun,draupadi).
 
+married(ganga,king_shantanu).
+married(satyavati,king_shantanu).
+married(vichitraveerya,ambika).
+married(vichitraveerya,ambalika).
+married(vichitraveerya,third_maid).
+married(kunti,pandu).
+married(madri,pandu).
+married(dhrutarashtra,gandhari).
+married(subhadra,arjun).
+married(draupadi,yudhistir).
+married(draupadi,bheem).
+married(hidimba,bheem).
+married(draupadi,nakul).
+married(draupadi,sahdev).
+married(draupadi,arjun).
 
-married(X,Y):- married(Y,X),!.
+
+%married(X,Y) :- married(Y,X),!.
 
 %X is father of Y
 father(X,Y) :- male(X),child(X,Y).
@@ -122,12 +139,15 @@ ancestor(X,Y) :- child(X,Somebody),ancestor(Somebody,Y).
 descendant(X,Y) :- ancestor(Y,X).
 
 %X is wife of Y
-wife(X,Y) :- married(X,Y),male(Y),female(X).
+wife(X,Y) :- female(X),married(X,Y), X \= Y.
+
+%X is husband of Y
+husband(X,Y) :- male(X),married(X,Y), X \= Y.
 
 %X is sister of Y
-sister(X,Y) :- female(X),child(Somebody,X),child(Somebody,Y), X \= Y.
+sister(X,Y) :- female(X),sibling(X,Y).
 %X is brother of Y
-brother(X,Y) :- male(X),child(Somebody,X),child(Somebody,Y), X \= Y.
+brother(X,Y) :- male(X),sibling(X,Y).
 
 %X is sister_in_law of Y
 sister_in_law(X,Y) :- female(X),married(X,C),brother(C,Y), X \= Y.
@@ -164,6 +184,7 @@ relation(X,Y,"grandmother")    	:- grandmother(X,Y).
 relation(X,Y,"aunt")    		:- aunt(X,Y).%
 relation(X,Y,"uncle")    		:- uncle(X,Y).
 relation(X,Y,"wife")    		:- wife(X,Y).
+relation(X,Y,"husband")    		:- husband(X,Y).
 relation(X,Y,"sister")    		:- sister(X,Y).
 relation(X,Y,"brother")    		:- brother(X,Y). 
 relation(X,Y,"sister_in_law")   :- sister_in_law(X,Y).
@@ -171,6 +192,7 @@ relation(X,Y,"brother_in_law")  :- brother_in_law(X,Y).
 relation(X,Y,"sibling")    		:- sibling(X,Y).
 relation(X,Y,"half_sibling")    :- half_sibling(X,Y).
 relation(X,Y,"first_cousin")    :- first_cousin(X,Y).%
+relation(X,Y,"cousin")		    :- cousin(X,Y).%
 relation(X,Y,"nephew")    		:- nephew(X,Y). 
 relation(X,Y,"neice")    		:- neice(X,Y). 
 relation(X,Y,"related") 	   	:- related(X,Y). 
