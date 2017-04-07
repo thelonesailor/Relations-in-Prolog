@@ -5,7 +5,7 @@ male(chitrangad).
 male(vichitraveerya).
 male(pandu).
 male(yudhisthir).
-male(bhim).
+male(bheem).
 male(arjun).
 male(vidur).
 male(karn).
@@ -15,7 +15,9 @@ male(dhrutarashtra).
 male(dussan).
 male(yuyutsu).
 male(duryon).
-
+male(surya).
+male(abhimanyu).
+male(arjun).
 
 female(ambalika).
 female(kunti).
@@ -26,19 +28,33 @@ female(ambika).
 female(gandhari).
 female(dushala).
 female(third_maid).
+female(sauvali).
+female(draupadi).
+female(hidimba).
 
 %child(X,Y) X has child Y
 child(sage_parashar,vyas).
 child(satyavati,vyas).
 child(satyavati,vichitraveerya).
 child(satyavati,chitrangad).
+
 child(ambalika,pandu).
-child(vichitraveerya,pandu).
+child(vyas,pandu).
+child(third_maid,vidur).
+child(vyas,vidur).
+child(kashya,ambika).
+child(kashya,ambalika).
+
+child(ambika,dhrutarashtra).
+child(vyas,dhrutarashtra).
+
 child(kunti,yudhisthir).
-child(kunti,bhim).
+child(kunti,bheem).
 child(kunti,arjun).
+child(arjun,abhimanyu).
+child(subhadra,abhimanyu).
 child(pandu,yudhisthir).
-child(pandu,bhim).
+child(pandu,bheem).
 child(pandu,arjun).
 child(gandhari,duryon).
 child(gandhari,dushala).
@@ -51,12 +67,13 @@ child(madri,sahdev).
 child(pandu,nakul).
 child(pandu,sahdev).
 child(kunti,karn).
-child(vyas,dhrutarashtra).
-child(ambika,dhrutarashtra).
+child(surya,karn).
 child(dhrutarashtra,yuyutsu).
-child(vyas,vidur).
-child(third_maid,vidur).
-
+child(sauvali,yuyutsu).
+child(bheem,ghatotkach).
+child(hidimba,ghatotkach).
+child(ganga,bheeshma).
+child(shantanu,bheeshma).
 
 married(king_shantanu,ganga).
 married(king_shantanu,satyavati).
@@ -66,11 +83,17 @@ married(third_maid,vichitraveerya).
 married(pandu,kunti).
 married(pandu,madri).
 married(gandhari,dhrutarashtra).
+married(arjun,subhadra).
 
+married(yudhistir,draupadi).
+married(bheem,draupadi).
+married(bheem,hidimba).
+married(nakul,draupadi).
+married(sahdev,draupadi).
+married(arjun,draupadi).
 
 
 married(X,Y):- married(Y,X),!.
-
 
 %X is father of Y
 father(X,Y) :- male(X),child(X,Y).
@@ -82,17 +105,21 @@ son(X,Y) :- male(X),child(Y,X).
 %X is daughter of Y
 daughter(X,Y) :- female(X),child(Y,X).
 
+%X is grandfather of Y
 grandfather(X,Y) :- male(X),child(X,Somebody),child(Somebody,Y).
+%X is grandmother of Y
 grandmother(X,Y) :- female(X),child(X,Somebody),child(Somebody,Y).
 
-aunt(X,Y) :- female(X),sister(X,Mom),mother(Mom,Y).
-aunt(X,Y) :- female(X),sister(X,Dad),father(Dad,Y).
-uncle(X,Y) :- male(X),brother(X,Par),child(Par,Y).
-cousin(X,Y) :- uncle(Unc , X),father(Unc,Y).
+%X is aunt of Y
+aunt(X,Y) :- female(X),sister(X,Parent),child(Parent,Y).
+uncle(X,Y) :- male(X),brother(X,Parent),child(Parent,Y).
 
 %X is ancestor of Y
 ancestor(X,Y) :- child(X,Y).
 ancestor(X,Y) :- child(X,Somebody),ancestor(Somebody,Y).
+
+%X is descendant of Y
+descendant(X,Y) :- ancestor(Y,X).
 
 %X is wife of Y
 wife(X,Y) :- married(X,Y),male(Y),female(X).
@@ -102,15 +129,51 @@ sister(X,Y) :- female(X),child(Somebody,X),child(Somebody,Y), X \= Y.
 %X is brother of Y
 brother(X,Y) :- male(X),child(Somebody,X),child(Somebody,Y), X \= Y.
 
-sibling(X,Y) :- child(Somebody,X),child(Somebody,Y), X \= Y.
+%X is sister_in_law of Y
+sister_in_law(X,Y) :- female(X),married(X,C),brother(C,Y), X \= Y.
+%X is brother of Y
+brother_in_law(X,Y) :- male(X),married(X,C),brother(C,Y), X \= Y.
 
-%some relation if common ancestor
-%relation(X,X) :- false.
-relation(X,Y) :- ancestor(Somebody,X),ancestor(Somebody,Y), X \= Y.
+%X and Y are siblings
+sibling(X,Y) :- male(C),female(D),child(C,X),child(C,Y),child(D,X),child(D,Y), X \= Y.
+
+%X and Y are cousins
+cousin(X,Y) :- child(C,X),sibling(C,D),child(D,Y).
+
+%first_cousin
+first_cousin(A,B) :- cousin(A,B).
+
+%A and B are half_sibling
+half_sibling(A,B) :- child(P1,A),child(P1,B),child(P2,A),child(P3,B),A\=B,P1\=P2,P3\=P2,P1\=P3.
 
 %X is nephew of Y
-nephew(X,Y) :- sibling(Y,B),child(B,X),male(X).
-
+nephew(X,Y) :- male(X),child(B,X),sibling(B,Y).
 %X is neice of Y
-neice(X,Y) :- sibling(Y,B),child(B,X),female(X).
+neice(X,Y) :- female(X),child(B,X),sibling(B,Y).
+
+%related if common ancestor
+related(X,Y) :- ancestor(Somebody,X),ancestor(Somebody,Y), X \= Y.
+
+
+relation(X,Y,"father")    		:- father(X,Y).
+relation(X,Y,"mother")     		:- mother(X,Y).
+relation(X,Y,"son")		  		:- son(X,Y).
+relation(X,Y,"daughter")  		:- daughter(X,Y).
+relation(X,Y,"grandfather")    	:- grandfather(X,Y).
+relation(X,Y,"grandmother")    	:- grandmother(X,Y).
+relation(X,Y,"aunt")    		:- aunt(X,Y).%
+relation(X,Y,"uncle")    		:- uncle(X,Y).
+relation(X,Y,"wife")    		:- wife(X,Y).
+relation(X,Y,"sister")    		:- sister(X,Y).
+relation(X,Y,"brother")    		:- brother(X,Y). 
+relation(X,Y,"sister_in_law")   :- sister_in_law(X,Y).
+relation(X,Y,"brother_in_law")  :- brother_in_law(X,Y). 
+relation(X,Y,"sibling")    		:- sibling(X,Y).
+relation(X,Y,"half_sibling")    :- half_sibling(X,Y).
+relation(X,Y,"first_cousin")    :- first_cousin(X,Y).%
+relation(X,Y,"nephew")    		:- nephew(X,Y). 
+relation(X,Y,"neice")    		:- neice(X,Y). 
+relation(X,Y,"related") 	   	:- related(X,Y). 
+relation(X,Y,"ancestor")    	:- ancestor(X,Y).
+relation(X,Y,"descendant")    	:- descendant(X,Y).
 
